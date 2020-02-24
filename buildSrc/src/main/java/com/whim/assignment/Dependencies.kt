@@ -1,0 +1,22 @@
+object Dependencies {
+    val kotlin = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${Versions.kotlinVersion}"
+    val appcompat = "androidx.appcompat:appcompat:${Versions.appcompatVersion}"
+    val ktxCore = "androidx.core:core-ktx:${Versions.ktxCore}"
+    val constraintLayout = "androidx.constraintlayout:constraintlayout:${Versions.constraintLayoutVersion}"
+    val junit =  "junit:junit:${Versions.junitVersion}"
+    val androidxTestExtensionJunit =  "androidx.test.ext:junit:${Versions.androidxTestExtensionJunitVersion}"
+    val espressoCore = "androidx.test.espresso:espresso-core:${Versions.espressoCoreVersion}"
+    val daggerCompiler = "com.google.dagger:dagger-compiler:${Versions.daggerVersion}"
+    var dagger = "com.google.dagger:dagger:${Versions.daggerVersion}"
+    val lifecycleViewModel = "androidx.lifecycle:lifecycle-viewmodel-ktx:${Versions.lifecycleVersion}"
+    val retrofit = "com.squareup.retrofit2:retrofit:${Versions.retrofit2_version}"
+    val retrofitGson = "com.squareup.retrofit2:converter-gson:${Versions.retrofit2_version}"
+    val material = "com.google.android.material:material:${Versions.materialVersion}"
+    val rxAndroid = "io.reactivex.rxjava2:rxandroid:${Versions.rxAndroidVersion}"
+    val rxJava = "io.reactivex.rxjava2:rxjava:${Versions.rxJavaVersion}"
+    val retrofitRxJavaAdapter = "com.squareup.retrofit2:adapter-rxjava2:${Versions.retrofit2_version}"
+    val okhttp = "com.squareup.okhttp3:logging-interceptor:${Versions.okhttpVersion}"
+    val legacySupport= "androidx.legacy:legacy-support-v4:1.0.0"
+
+
+}

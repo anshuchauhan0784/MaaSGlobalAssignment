@@ -1,0 +1,56 @@
+apply plugin: Plugins.androidApplication
+apply plugin: Plugins.kotlinAndroid
+apply plugin: Plugins.kotlinKapt
+apply plugin: Plugins.kotlinAndroidExtensions
+
+android {
+    compileSdkVersion Configs.compileSdkVersion
+    buildToolsVersion Configs.buildToolsVersion
+    defaultConfig {
+        applicationId Configs.applicationId
+        minSdkVersion Configs.minSdkVersion
+        targetSdkVersion Configs.targetSdkVersion
+        versionCode Configs.versionCode
+        versionName Configs.versionName
+        testInstrumentationRunner Configs.testInstrumentationRunner
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation Dependencies.kotlin
+    implementation Dependencies.appcompat
+    implementation Dependencies.ktxCore
+    implementation Dependencies.constraintLayout
+    implementation Dependencies.material
+
+    // ViewModel
+    implementation Dependencies.lifecycleViewModel
+    // dagger
+    implementation Dependencies.dagger
+    kapt Dependencies.daggerCompiler
+
+    //Retrofit
+    implementation Dependencies.retrofit
+    implementation Dependencies.retrofitGson
+    implementation Dependencies.okhttp
+
+
+    //RX
+    implementation Dependencies.rxAndroid
+    implementation Dependencies.rxJava
+    implementation Dependencies.retrofitRxJavaAdapter
+
+
+    testImplementation Dependencies.junit
+    androidTestImplementation Dependencies.androidxTestExtensionJunit
+    androidTestImplementation Dependencies.espressoCore
+
+    implementation Dependencies.legacySupport
+}

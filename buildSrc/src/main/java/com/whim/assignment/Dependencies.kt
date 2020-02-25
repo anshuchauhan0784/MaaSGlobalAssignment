@@ -17,6 +17,7 @@ object Dependencies {
     val retrofitRxJavaAdapter = "com.squareup.retrofit2:adapter-rxjava2:${Versions.retrofit2_version}"
     val okhttp = "com.squareup.okhttp3:logging-interceptor:${Versions.okhttpVersion}"
     val legacySupport= "androidx.legacy:legacy-support-v4:1.0.0"
-
+    val googleMap = "com.google.android.gms:play-services-maps:${Versions.googleMapVersion}"
+    val googleLocation = "com.google.android.gms:play-services-location:${Versions.googleLocationVersion}"
 
 }

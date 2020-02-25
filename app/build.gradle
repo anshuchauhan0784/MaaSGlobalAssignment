@@ -48,6 +48,10 @@ dependencies {
     implementation Dependencies.retrofitRxJavaAdapter
 
 
+    //Maps
+    implementation Dependencies.googleLocation
+    implementation Dependencies.googleMap
+
     testImplementation Dependencies.junit
     androidTestImplementation Dependencies.androidxTestExtensionJunit
     androidTestImplementation Dependencies.espressoCore

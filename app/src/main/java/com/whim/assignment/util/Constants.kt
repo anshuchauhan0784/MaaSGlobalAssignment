@@ -6,6 +6,10 @@ class Constants {
 
         const val BASE_URL_WIKI = "https://en.wikipedia.org/"
         const val BASE_URL_GOOGLE_MAP: String = "https://open-api.xyz/password_reset/"
-        const val  BASE_URL = "https://api.github.com/"
+        const val  ACTION = "query"
+        const val  LIST_CODE ="geosearch"
+        const val  RADIUS = "5000"
+        const val  LIMIT = "25"
+        const val  FORMAT = "json"
     }
 }

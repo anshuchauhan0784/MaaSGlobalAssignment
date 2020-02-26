@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -18,16 +17,18 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.whim.assignment.BaseApplication
 import com.whim.assignment.R
+import com.whim.assignment.common.Status
 import com.whim.assignment.common.ui.observeNonNull
+import com.whim.assignment.ui.ArticleDetailViewState
 import com.whim.assignment.ui.ArticleMapComponent
 import com.whim.assignment.ui.ArticleViewModel
 import com.whim.assignment.ui.NearByArticleViewState
-import com.whim.assignment.util.Constants.Companion.DEFAULT_ZOOM
+import com.whim.assignment.ui.model.ArticleDetail
 import kotlinx.android.synthetic.main.activity_article_map.*
+import kotlinx.android.synthetic.main.article_detail.view.*
 import javax.inject.Inject
 
 
@@ -49,26 +50,75 @@ class ArticleMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private  var mLastKnownLocation : Location? = null
 
-    private var mBottomSheetBehavior: BottomSheetBehavior<View?>? = null
+   // private var mBottomSheetBehavior: BottomSheetBehavior<View?>? = null
+
+    private  val DEFAULT_ZOOM = 12f
 
     override fun onCreate(savedInstanceState: Bundle?) {
         articleMapComponent = (application as BaseApplication).appComponent.articleMapComponent().create()
         articleMapComponent.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_article_map)
-        configureBackdrop()
+        //configureBackdrop()
         initializeMap()
         checkLocationPermission()
         articleViewModel = ViewModelProvider(this,viewModelProviderFactory).get(ArticleViewModel::class.java)
-        articleViewModel.getNearByArticleLiveData().observeNonNull(this){ state ->
-                drawMarker(state)
-        }
+        registerForLiveDataNearByArticle()
+        registerForLiveDataArticleDetail()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
+    }
+
+    private fun registerForLiveDataNearByArticle(){
+        articleViewModel.getNearByArticleLiveData().observeNonNull(this){ state ->
+            handleNearbyArticleResponse(state)
+
+        }
+    }
+
+    /**
+     * This method will handle the response after make the request for near by article
+     */
+    private fun handleNearbyArticleResponse(nearByArticleViewState: NearByArticleViewState){
+        if(nearByArticleViewState.isLoading()){
+            progressBar.visibility = View.VISIBLE
+        }else if(nearByArticleViewState.status == Status.SUCCESS){
+            progressBar.visibility = View.GONE
+            drawMarker(nearByArticleViewState)
+        }else if(nearByArticleViewState.status == Status.ERROR){
+            progressBar.visibility = View.GONE
+            showErrorToast(nearByArticleViewState.getErrorMessage())
+        }
+    }
+
+    /**
+     * This method will use to show error Toast
+     */
+    private fun showErrorToast(errorMessage : String?){
+        progressBar.visibility = View.GONE
+        Toast.makeText(this,errorMessage,Toast.LENGTH_LONG).show()
+    }
 
 
+    private fun registerForLiveDataArticleDetail(){
+        articleViewModel.getArticleDetailLiveData().observeNonNull(this){ state ->
+            handleArticleDetailResponse(state)
+        }
+    }
 
-
+    /**
+     * This method will handle the response after make the request to get Article Detail
+     */
+    private fun handleArticleDetailResponse(state: ArticleDetailViewState){
+        if(state.isLoading()){
+            progressBar.visibility = View.VISIBLE
+        }else if(state.status == Status.SUCCESS){
+            progressBar.visibility = View.GONE
+            showArticleDetailDialog(state.getArticleDetail())
+        }else if(state.status == Status.ERROR){
+            progressBar.visibility = View.GONE
+            showErrorToast(state.getErrorMessage())
+        }
     }
 
     private fun initializeMap(){
@@ -88,6 +138,8 @@ class ArticleMapActivity : AppCompatActivity(), OnMapReadyCallback {
      */
     private fun getDeviceLocation() {
         if (mLocationPermissionGranted) {
+            googleMap?.isMyLocationEnabled = true
+            googleMap?.uiSettings?.isMyLocationButtonEnabled = true
             fusedLocationClient.lastLocation.addOnCompleteListener {task ->
 
                 if(task.isSuccessful){
@@ -96,8 +148,8 @@ class ArticleMapActivity : AppCompatActivity(), OnMapReadyCallback {
                         googleMap?.moveCamera(
                             CameraUpdateFactory.newLatLngZoom(
                                 LatLng(
-                                    location.getLatitude(),
-                                    location.getLongitude()
+                                    location.latitude,
+                                    location.longitude
                                 ), DEFAULT_ZOOM
                             )
                         )
@@ -107,8 +159,7 @@ class ArticleMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
 
-            /*googleMap?.isMyLocationEnabled = true
-            googleMap?.uiSettings?.isMyLocationButtonEnabled = true*/
+
         }
     }
 
@@ -119,7 +170,7 @@ class ArticleMapActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun drawMarker(state : NearByArticleViewState){
 
 
-        state.data?.let { articleList ->
+        state.getArticleList()?.let { articleList ->
             for (articleGeoData in articleList){
                 val latLng = LatLng(articleGeoData.lat,articleGeoData.lng)
                 var marker  = googleMap?.addMarker(
@@ -196,23 +247,22 @@ class ArticleMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
     private  val onMarkerClick = GoogleMap.OnMarkerClickListener {marker ->
-    // mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_HALF_EXPANDED
-        showBottomSheetDialog()
         articleViewModel.getArticleDetail(marker.tag as Int)
         return@OnMarkerClickListener true
     }
 
-    private fun showBottomSheetDialog()
+    private fun showArticleDetailDialog(detail: ArticleDetail?)
     {
         var articleDetailDialog =  BottomSheetDialog(this)
-        var detailView = layoutInflater.inflate(R.layout.fragment_article_detail,null)
-
+        var detailView = layoutInflater.inflate(R.layout.article_detail,null)
+        detailView.tv_title.text = detail?.title
+        detailView.tv_description.text = detail?.detail
         articleDetailDialog.setContentView(detailView)
         articleDetailDialog.show()
 
     }
 
-    private fun configureBackdrop() {
+   /* private fun configureBackdrop() {
         // Get the fragment reference
         val fragment = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
 
@@ -228,6 +278,6 @@ class ArticleMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
         }
-    }
+    }*/
 
 }

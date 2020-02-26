@@ -1,3 +1,4 @@
+
 object Dependencies {
     val kotlin = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${Versions.kotlinVersion}"
     val appcompat = "androidx.appcompat:appcompat:${Versions.appcompatVersion}"
@@ -19,5 +20,6 @@ object Dependencies {
     val legacySupport= "androidx.legacy:legacy-support-v4:1.0.0"
     val googleMap = "com.google.android.gms:play-services-maps:${Versions.googleMapVersion}"
     val googleLocation = "com.google.android.gms:play-services-location:${Versions.googleLocationVersion}"
-
+    val glide = "com.github.bumptech.glide:glide:${Versions.glide_version}"
+    val glideCompiler = "com.github.bumptech.glide:compiler:${Versions.glide_version}"
 }

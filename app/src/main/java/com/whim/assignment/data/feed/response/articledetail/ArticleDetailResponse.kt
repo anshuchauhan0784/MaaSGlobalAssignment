@@ -21,7 +21,7 @@ data class Detail(
     val contentmodel: String,
     val description: String,
     val descriptionsource: String,
-    val images: List<Image>,
+    val images: List<Image>?,
     val lastrevid: Int,
     val length: Int,
     val ns: Int,

@@ -16,5 +16,6 @@ object Versions {
     val okhttpVersion = "4.0.1"
     val googleMapVersion ="16.1.0"
     val googleLocationVersion ="15.0.1"
+    val glide_version = "4.9.0"
 
 }

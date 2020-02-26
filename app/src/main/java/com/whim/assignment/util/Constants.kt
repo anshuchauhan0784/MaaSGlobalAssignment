@@ -11,6 +11,10 @@ class Constants {
         const val  RADIUS = "10000"
         const val  LIMIT = "25"
         const val  FORMAT = "json"
-        const val DEFAULT_ZOOM = 11f
+
+
+        const val IMAGE_BASE_URL = "https://commons.wikimedia.org/wiki/Special:FilePath/"
+
+        const val IMAGE_WIDTH = 200
     }
 }

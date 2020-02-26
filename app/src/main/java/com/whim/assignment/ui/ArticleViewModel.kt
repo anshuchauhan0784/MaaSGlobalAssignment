@@ -22,6 +22,10 @@ class ArticleViewModel @Inject constructor(
 
     private val listNearByArticle = MutableLiveData<NearByArticleViewState>()
 
+    private val articleDetail =  MutableLiveData<ArticleDetailViewState>()
+
+    fun getArticleDetailLiveData(): LiveData<ArticleDetailViewState> = articleDetail
+
     fun getNearByArticleLiveData(): LiveData<NearByArticleViewState> = listNearByArticle
 
     fun getNearByArticles(latLng: String){
@@ -59,7 +63,11 @@ class ArticleViewModel @Inject constructor(
 
 
     private fun onResultArticleDetailReady(resource: Resource<ArticleDetail>) {
-        Log.d("",""+resource)
+        articleDetail.value = ArticleDetailViewState(
+            status = resource.status,
+            error = resource.error,
+            data = resource.data
+        )
 
     }
 

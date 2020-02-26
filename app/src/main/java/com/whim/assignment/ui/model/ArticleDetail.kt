@@ -5,5 +5,5 @@ import com.whim.assignment.data.feed.response.articledetail.Image
 class ArticleDetail(
     val title : String?,
     val detail : String?,
-    images: List<Image>?
+    imageUrl: List<String>?
 )

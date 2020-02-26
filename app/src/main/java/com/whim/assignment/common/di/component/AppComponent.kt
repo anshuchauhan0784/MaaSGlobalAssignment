@@ -1,6 +1,8 @@
 package com.whim.assignment.common.di.component
 
 import android.content.Context
+import com.whim.assignment.BaseApplication
+import com.whim.assignment.common.di.module.AppModule
 import com.whim.assignment.common.di.module.DataModule
 import com.whim.assignment.common.di.module.ViewModelModule
 import com.whim.assignment.ui.ArticleMapComponent
@@ -15,7 +17,8 @@ import javax.inject.Singleton
 @Component(modules = [
     AppSubcomponents::class,
     DataModule::class,
-    ViewModelModule::class
+    ViewModelModule::class,
+    AppModule::class
 ]
 )
 interface AppComponent {
@@ -28,5 +31,6 @@ interface AppComponent {
     }
 
     fun articleMapComponent(): ArticleMapComponent.Factory
+
 
 }

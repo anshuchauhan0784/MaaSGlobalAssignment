@@ -24,7 +24,8 @@ interface  WikiRestInterface{
         @Query("action") action: String,
         @Query("prop") prop: String,
         @Query("pageids") pageids: Int,
-        @Query("format") format: String
+        @Query("format") format: String,
+        @Query("inprop") inprop: String
     ) : Observable<ArticleDetailResponse>
 
 }

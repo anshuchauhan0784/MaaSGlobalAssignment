@@ -2,4 +2,7 @@
     <string name="app_name">Assignment</string>
     <string name="title">Title</string>
     <string name="description">description</string>
+    <string name="title_not_available">Title not available</string>
+    <string name="desc_not_available">Description not available</string>
+    <string name="wikipedia">Wikipedia</string>
 </resources>

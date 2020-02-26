@@ -3,8 +3,10 @@ package com.whim.assignment.data.feed
 import com.whim.assignment.data.WikiRestInterface
 import com.whim.assignment.util.Constants.Companion.ACTION
 import com.whim.assignment.util.Constants.Companion.FORMAT
+import com.whim.assignment.util.Constants.Companion.INPROP
 import com.whim.assignment.util.Constants.Companion.LIMIT
 import com.whim.assignment.util.Constants.Companion.LIST_CODE
+import com.whim.assignment.util.Constants.Companion.PROP
 import com.whim.assignment.util.Constants.Companion.RADIUS
 import javax.inject.Inject
 
@@ -22,8 +24,9 @@ class ArticleDataSource @Inject constructor(private val wikiRestInterface: WikiR
 
         fun getArticleDetail(pageId : Int) = wikiRestInterface.getArticleDetail(
             ACTION,
-            "info|description|images",
+            PROP,
             pageId,
-            FORMAT
+            FORMAT,
+            INPROP
         )
 }

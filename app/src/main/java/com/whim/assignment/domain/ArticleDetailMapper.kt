@@ -20,6 +20,7 @@ class ArticleDetailMapper @Inject constructor() : Mapper<ArticleDetailResponse ,
         return ArticleDetail(
             detail.title,
             detail.description,
+            detail.fullurl,
             listImageUrl
         )
     }

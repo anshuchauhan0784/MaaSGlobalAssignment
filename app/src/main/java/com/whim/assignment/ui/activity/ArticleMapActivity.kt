@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
+import com.bumptech.glide.RequestManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -17,18 +18,16 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.whim.assignment.BaseApplication
 import com.whim.assignment.R
 import com.whim.assignment.common.Status
 import com.whim.assignment.common.ui.observeNonNull
-import com.whim.assignment.ui.ArticleDetailViewState
 import com.whim.assignment.ui.ArticleMapComponent
 import com.whim.assignment.ui.ArticleViewModel
 import com.whim.assignment.ui.NearByArticleViewState
-import com.whim.assignment.ui.model.ArticleDetail
+import com.whim.assignment.ui.fragment.ArticleDetailFragment
 import kotlinx.android.synthetic.main.activity_article_map.*
-import kotlinx.android.synthetic.main.article_detail.view.*
 import javax.inject.Inject
 
 
@@ -50,21 +49,21 @@ class ArticleMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private  var mLastKnownLocation : Location? = null
 
-   // private var mBottomSheetBehavior: BottomSheetBehavior<View?>? = null
+    private var mBottomSheetBehavior: BottomSheetBehavior<View?>? = null
 
     private  val DEFAULT_ZOOM = 12f
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         articleMapComponent = (application as BaseApplication).appComponent.articleMapComponent().create()
         articleMapComponent.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_article_map)
-        //configureBackdrop()
         initializeMap()
         checkLocationPermission()
         articleViewModel = ViewModelProvider(this,viewModelProviderFactory).get(ArticleViewModel::class.java)
         registerForLiveDataNearByArticle()
-        registerForLiveDataArticleDetail()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
     }
@@ -94,31 +93,9 @@ class ArticleMapActivity : AppCompatActivity(), OnMapReadyCallback {
     /**
      * This method will use to show error Toast
      */
-    private fun showErrorToast(errorMessage : String?){
+     fun showErrorToast(errorMessage : String?){
         progressBar.visibility = View.GONE
         Toast.makeText(this,errorMessage,Toast.LENGTH_LONG).show()
-    }
-
-
-    private fun registerForLiveDataArticleDetail(){
-        articleViewModel.getArticleDetailLiveData().observeNonNull(this){ state ->
-            handleArticleDetailResponse(state)
-        }
-    }
-
-    /**
-     * This method will handle the response after make the request to get Article Detail
-     */
-    private fun handleArticleDetailResponse(state: ArticleDetailViewState){
-        if(state.isLoading()){
-            progressBar.visibility = View.VISIBLE
-        }else if(state.status == Status.SUCCESS){
-            progressBar.visibility = View.GONE
-            showArticleDetailDialog(state.getArticleDetail())
-        }else if(state.status == Status.ERROR){
-            progressBar.visibility = View.GONE
-            showErrorToast(state.getErrorMessage())
-        }
     }
 
     private fun initializeMap(){
@@ -247,37 +224,35 @@ class ArticleMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
     private  val onMarkerClick = GoogleMap.OnMarkerClickListener {marker ->
-        articleViewModel.getArticleDetail(marker.tag as Int)
+        showArticleDetail(marker.tag as Int)
         return@OnMarkerClickListener true
     }
 
-    private fun showArticleDetailDialog(detail: ArticleDetail?)
-    {
-        var articleDetailDialog =  BottomSheetDialog(this)
-        var detailView = layoutInflater.inflate(R.layout.article_detail,null)
-        detailView.tv_title.text = detail?.title
-        detailView.tv_description.text = detail?.detail
-        articleDetailDialog.setContentView(detailView)
-        articleDetailDialog.show()
-
+   private fun showArticleDetail(pageId : Int) {
+       var data  = Bundle()
+       data.putInt("PageId",pageId)
+       val articleDetailFragment = ArticleDetailFragment()
+       articleDetailFragment?.arguments = data
+       articleDetailFragment.show(supportFragmentManager,ArticleDetailFragment.TAG)
     }
 
-   /* private fun configureBackdrop() {
-        // Get the fragment reference
-        val fragment = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-
-        fragment?.let {
-            // Get the BottomSheetBehavior from the fragment view
-            it.view?.let { it1 ->
-                BottomSheetBehavior.from(it1)?.let { bsb ->
-                    // Set the initial state of the BottomSheetBehavior to HIDDEN
-                    bsb.state = BottomSheetBehavior.STATE_COLLAPSED
-                    bsb.isFitToContents = true
-                    mBottomSheetBehavior = bsb
-
-                }
-            }
-        }
-    }*/
-
 }
+
+
+// Get the fragment reference
+/* val fragment = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
+var data  = Bundle()
+data.putInt("PageId",pageId)
+fragment?.arguments = data
+ fragment?.let {
+     // Get the BottomSheetBehavior from the fragment view
+     it.view?.let { it1 ->
+         BottomSheetBehavior.from(it1)?.let { bsb ->
+             // Set the initial state of the BottomSheetBehavior to HIDDEN
+             bsb.state = BottomSheetBehavior.STATE_COLLAPSED
+             bsb.isFitToContents = true
+             mBottomSheetBehavior = bsb
+
+         }
+     }
+ }*/

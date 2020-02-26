@@ -30,6 +30,7 @@ data class Detail(
     val pagelanguagedir: String,
     val pagelanguagehtmlcode: String,
     val title: String,
+    val fullurl : String,
     val touched: String
 )
 

@@ -2,6 +2,7 @@ package com.whim.assignment.ui
 
 import com.whim.assignment.common.di.scope.ActivityScope
 import com.whim.assignment.ui.activity.ArticleMapActivity
+import com.whim.assignment.ui.fragment.ArticleDetailFragment
 import dagger.Subcomponent
 
 
@@ -18,4 +19,6 @@ interface ArticleMapComponent{
 
     // Classes that can be injected by this Component
     fun inject(activity: ArticleMapActivity)
+
+    fun inject(fragment: ArticleDetailFragment)
 }

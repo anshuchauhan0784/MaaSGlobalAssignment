@@ -8,8 +8,9 @@ class Constants {
         const val BASE_URL_GOOGLE_MAP: String = "https://open-api.xyz/password_reset/"
         const val  ACTION = "query"
         const val  LIST_CODE ="geosearch"
-        const val  RADIUS = "5000"
+        const val  RADIUS = "10000"
         const val  LIMIT = "25"
         const val  FORMAT = "json"
+        const val DEFAULT_ZOOM = 11f
     }
 }

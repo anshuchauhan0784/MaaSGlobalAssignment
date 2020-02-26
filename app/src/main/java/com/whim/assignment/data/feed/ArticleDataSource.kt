@@ -18,4 +18,12 @@ class ArticleDataSource @Inject constructor(private val wikiRestInterface: WikiR
             LIMIT,
             FORMAT
         )
+
+
+        fun getArticleDetail(pageId : Int) = wikiRestInterface.getArticleDetail(
+            ACTION,
+            "info|description|images",
+            pageId,
+            FORMAT
+        )
 }

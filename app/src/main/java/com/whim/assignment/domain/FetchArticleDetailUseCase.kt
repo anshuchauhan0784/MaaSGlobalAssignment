@@ -3,19 +3,20 @@ package com.whim.assignment.domain
 import com.whim.assignment.common.Resource
 import com.whim.assignment.data.feed.ArticleRepository
 import com.whim.assignment.data.feed.response.articledetail.ArticleDetailResponse
+import com.whim.assignment.ui.model.ArticleDetail
 import com.whim.assignment.ui.model.ArticleGeoData
 import io.reactivex.Observable
 import javax.inject.Inject
 
-class FetchNearByArticleUseCase  @Inject constructor(
+class FetchArticleDetailUseCase @Inject constructor(
     private val repository: ArticleRepository,
-    private val mapper: ArticleListMapper
-){
+    private val mapper: ArticleDetailMapper
+    ){
 
 
-    fun getNearByArticles(latLng : String) : Observable<Resource<List<ArticleGeoData>>>{
+    fun getArticleDetail(pageId : Int) : Observable<Resource<ArticleDetail>> {
         return  repository
-            .getNearByArticles(latLng)
+            .getArticleDetail(pageId)
             .map { resource ->
                 Resource(
                     status = resource.status,
@@ -24,7 +25,4 @@ class FetchNearByArticleUseCase  @Inject constructor(
                 )
             }
     }
-
-
-
 }

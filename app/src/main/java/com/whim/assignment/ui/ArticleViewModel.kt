@@ -6,12 +6,19 @@ import androidx.lifecycle.MutableLiveData
 import com.whim.assignment.common.Resource
 import com.whim.assignment.common.RxAwareViewModel
 import com.whim.assignment.common.ui.plusAssign
+import com.whim.assignment.data.feed.response.articledetail.ArticleDetailResponse
+import com.whim.assignment.domain.FetchArticleDetailUseCase
 import com.whim.assignment.domain.FetchNearByArticleUseCase
+import com.whim.assignment.ui.model.ArticleDetail
 import com.whim.assignment.ui.model.ArticleGeoData
 import io.reactivex.android.schedulers.AndroidSchedulers
 import javax.inject.Inject
 
-class ArticleViewModel @Inject constructor(private  val  fetchNearByArticleUseCase: FetchNearByArticleUseCase) : RxAwareViewModel(){
+class ArticleViewModel @Inject constructor(
+    private  val  fetchNearByArticleUseCase: FetchNearByArticleUseCase,
+    private  val  fetchArticleDetailUseCase: FetchArticleDetailUseCase
+
+) : RxAwareViewModel(){
 
     private val listNearByArticle = MutableLiveData<NearByArticleViewState>()
 
@@ -28,7 +35,31 @@ class ArticleViewModel @Inject constructor(private  val  fetchNearByArticleUseCa
     }
 
     private fun onResultReady(resource: Resource<List<ArticleGeoData>>) {
-        Log.d("Test",""+resource.data)
+
+        listNearByArticle.value = NearByArticleViewState(
+            status = resource.status,
+            error = resource.error,
+            data = resource.data
+        )
+
+    }
+
+
+    fun getArticleDetail(pageId : Int){
+        fetchArticleDetailUseCase
+            .getArticleDetail(pageId)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(this::onResultArticleDetailReady)
+            .also {
+                disposable += it
+            }
+    }
+
+
+
+
+    private fun onResultArticleDetailReady(resource: Resource<ArticleDetail>) {
+        Log.d("",""+resource)
 
     }
 

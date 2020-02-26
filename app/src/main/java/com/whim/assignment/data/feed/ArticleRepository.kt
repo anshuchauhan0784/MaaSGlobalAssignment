@@ -2,6 +2,7 @@ package com.whim.assignment.data.feed
 
 import com.whim.assignment.common.Resource
 import com.whim.assignment.common.ui.applyLoading
+import com.whim.assignment.data.feed.response.articledetail.ArticleDetailResponse
 import com.whim.assignment.data.feed.response.nearbyarticle.ArticleDataResponse
 import io.reactivex.schedulers.Schedulers
 import java.util.*
@@ -13,6 +14,18 @@ class ArticleRepository @Inject constructor(private val  dataSource: ArticleData
     fun getNearByArticles(latLng : String) : Observable<Resource<ArticleDataResponse>> =
         dataSource
             .getNearByArticles(latLng)
+            .map {
+                Resource.success(it)
+            }
+            .onErrorReturn { Resource.error(it) }
+            .subscribeOn(Schedulers.io())
+            .compose(applyLoading())
+
+
+
+    fun getArticleDetail(pageId : Int) : Observable<Resource<ArticleDetailResponse>> =
+        dataSource
+            .getArticleDetail(pageId)
             .map {
                 Resource.success(it)
             }

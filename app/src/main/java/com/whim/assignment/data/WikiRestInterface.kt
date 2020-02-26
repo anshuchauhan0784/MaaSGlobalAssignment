@@ -1,5 +1,6 @@
 package com.whim.assignment.data
 
+import com.whim.assignment.data.feed.response.articledetail.ArticleDetailResponse
 import com.whim.assignment.data.feed.response.nearbyarticle.ArticleDataResponse
 import io.reactivex.Observable
 import retrofit2.http.GET
@@ -16,5 +17,14 @@ interface  WikiRestInterface{
         @Query("gslimit") gslimit: String,
         @Query("format") format: String
     ) : Observable<ArticleDataResponse>
+
+
+    @GET("/w/api.php/")
+    fun getArticleDetail(
+        @Query("action") action: String,
+        @Query("prop") prop: String,
+        @Query("pageids") pageids: Int,
+        @Query("format") format: String
+    ) : Observable<ArticleDetailResponse>
 
 }

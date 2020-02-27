@@ -1,24 +1,24 @@
 package com.whim.assignment.ui.activity
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.gms.maps.model.*
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.whim.assignment.BaseApplication
 import com.whim.assignment.R
@@ -27,10 +27,15 @@ import com.whim.assignment.common.ui.observeNonNull
 import com.whim.assignment.ui.ArticleMapComponent
 import com.whim.assignment.ui.ArticleViewModel
 import com.whim.assignment.ui.NearByArticleViewState
+import com.whim.assignment.ui.adapter.SuggestedRouteAdapter
 import com.whim.assignment.ui.fragment.ArticleDetailFragment
+import com.whim.assignment.ui.listener.RouteDirectionButtonListener
 import com.whim.assignment.ui.model.RouteData
 import com.whim.assignment.util.Constants
+import com.whim.assignment.util.Constants.Companion.CAMERA_PADDING
+import com.whim.assignment.util.Constants.Companion.PEEK_HEIGHT
 import kotlinx.android.synthetic.main.activity_article_map.*
+import kotlinx.android.synthetic.main.bottom_sheet_suggested_route.view.*
 import javax.inject.Inject
 
 
@@ -58,8 +63,7 @@ class ArticleMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var selectedMarkerPosition : LatLng? = null
 
-    // Saving the list of marker on activity level so that after cancel on draw route we can show it again
-    private var listOfMarker = mutableListOf<Marker?>()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         articleMapComponent = (application as BaseApplication).appComponent.articleMapComponent().create()
@@ -162,7 +166,6 @@ class ArticleMapActivity : AppCompatActivity(), OnMapReadyCallback {
                         .title(articleGeoData.title)
                 )
                 marker?.tag = articleGeoData.id
-                listOfMarker.add(marker)
                 googleMap?.setOnMarkerClickListener(onMarkerClick)
 
             }
@@ -222,7 +225,9 @@ class ArticleMapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
 
-
+    /**
+     * This method will use to find near by articles based on location
+     */
 
     private fun findNearByArticles(location : Location){
         var requestData = "${location.latitude}|${location.longitude}"
@@ -230,12 +235,20 @@ class ArticleMapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
 
+    /**
+     * Click event on marker click which will open the article detail
+     */
     private  val onMarkerClick = GoogleMap.OnMarkerClickListener {marker ->
         selectedMarkerPosition =  marker.position
         showArticleDetail(marker.tag as Int,marker.position)
         return@OnMarkerClickListener true
     }
 
+
+    /**
+     * This method will open the Article detail Fragment it will pass Page Id  and Page lat lng and current lat lng.
+     * Current lat lng and page lat lng will use to find the routes
+     */
    private fun showArticleDetail(pageId : Int, latLng: LatLng) {
        var data  = Bundle()
        data.putInt(Constants.KEY_PAGE_ID,pageId)
@@ -247,7 +260,65 @@ class ArticleMapActivity : AppCompatActivity(), OnMapReadyCallback {
        articleDetailFragment.show(supportFragmentManager,ArticleDetailFragment.TAG)
     }
 
-    fun drawRoute(routeData: RouteData?){
+
+    /**
+     * This method will call from the fragment  and will draw the first route from the list
+     */
+    fun processRoute(listRouteData: List<RouteData>?){
+
+        listRouteData?.let { list ->
+            configureBottomSheetForSuggestedRoute(list)
+            list[0].routes?.let {
+                drawRoute(it)
+            }
+
+        }
+    }
+
+
+    /**
+     * This method will configure the suggested route screen bottom sheet
+     */
+    @SuppressLint("ClickableViewAccessibility")
+    private fun configureBottomSheetForSuggestedRoute(listRouteData: List<RouteData>){
+        var layout = findViewById<ConstraintLayout>(R.id.bs_suggested_route)
+        // Need to override touch as it was moving the map behind it
+        layout.setOnTouchListener { v, event ->
+            true
+        }
+
+        layout.iv_cancel.setOnClickListener {
+            mBottomSheetBehavior?.peekHeight = 0
+            mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+            articleViewModel.getNearByArticleLiveData().value?.let { articleViewState ->
+                googleMap?.clear()
+                drawMarker(articleViewState)
+            }
+
+
+        }
+        layout.rv_more_routes.layoutManager = LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false )
+        layout.rv_more_routes.adapter = SuggestedRouteAdapter(listRouteData,onButtonClickListener)
+        mBottomSheetBehavior = BottomSheetBehavior.from(layout)
+        mBottomSheetBehavior?.peekHeight = PEEK_HEIGHT
+    }
+
+
+    private val onButtonClickListener = object : RouteDirectionButtonListener {
+        override fun onButtonClick(data: RouteData) {
+           data.routes?.let {
+               mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+               drawRoute(it)
+           }
+        }
+    }
+
+
+    /**
+     * This method will be use to draw route based on lat lng
+     */
+    private fun drawRoute(latLngList : List<LatLng>){
+        googleMap?.setOnMarkerClickListener(null)
         googleMap?.clear()
         if(selectedMarkerPosition != null) {
             googleMap?.addMarker(
@@ -256,32 +327,18 @@ class ArticleMapActivity : AppCompatActivity(), OnMapReadyCallback {
             )
         }
 
-        routeData?.routes?.let {
-            googleMap?.addPolyline(PolylineOptions().addAll(it))
+        googleMap?.addPolyline(PolylineOptions().addAll(latLngList))
+
+        val latLngBoundsBuilder = LatLngBounds.builder()
+        for(points in latLngList){
+            latLngBoundsBuilder.include(points)
         }
-
-
+        googleMap?.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBoundsBuilder.build(), CAMERA_PADDING))
     }
+
+
 
 
 }
 
 
-
-// Get the fragment reference
-/* val fragment = supportFragmentManager.findFragmentById(R.id.bottom_sheet)
-var data  = Bundle()
-data.putInt("PageId",pageId)
-fragment?.arguments = data
- fragment?.let {
-     // Get the BottomSheetBehavior from the fragment view
-     it.view?.let { it1 ->
-         BottomSheetBehavior.from(it1)?.let { bsb ->
-             // Set the initial state of the BottomSheetBehavior to HIDDEN
-             bsb.state = BottomSheetBehavior.STATE_COLLAPSED
-             bsb.isFitToContents = true
-             mBottomSheetBehavior = bsb
-
-         }
-     }
- }*/

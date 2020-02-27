@@ -14,10 +14,16 @@ class Constants {
         const val  PROP ="info|description|images"
         const val  INPROP ="url"
 
+        const val  ALTERNATIVE = true
+
 
         const val IMAGE_BASE_URL = "https://commons.wikimedia.org/wiki/Special:FilePath/"
 
         const val IMAGE_WIDTH = 200
+
+        const val PEEK_HEIGHT = 400
+
+        const val CAMERA_PADDING = 300
 
         const val RADIUS_GLIDE = 20
 

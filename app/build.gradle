@@ -3,6 +3,7 @@ apply plugin: Plugins.kotlinAndroid
 apply plugin: Plugins.kotlinKapt
 apply plugin: Plugins.kotlinAndroidExtensions
 
+
 android {
     compileSdkVersion Configs.compileSdkVersion
     buildToolsVersion Configs.buildToolsVersion

@@ -6,7 +6,7 @@ import com.whim.assignment.ui.model.RouteData
 class GetRouteViewState(
     val status: Status,
     val error: Throwable? = null,
-    val data: RouteData?
+    val data: List<RouteData>?
 ) {
 
     fun getRouteData() = data

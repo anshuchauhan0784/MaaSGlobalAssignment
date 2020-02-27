@@ -3,11 +3,9 @@ package com.whim.assignment.ui.fragment
 
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.RequestManager
@@ -24,8 +22,7 @@ import com.whim.assignment.ui.activity.ArticleMapActivity
 import com.whim.assignment.ui.adapter.ImageViewerAdapter
 import com.whim.assignment.ui.model.ArticleDetail
 import com.whim.assignment.util.Constants
-import kotlinx.android.synthetic.main.activity_article_map.*
-import kotlinx.android.synthetic.main.article_detail.*
+import kotlinx.android.synthetic.main.fragment_article_detail.*
 import javax.inject.Inject
 
 
@@ -49,17 +46,19 @@ class ArticleDetailFragment : BottomSheetDialogFragment() {
         registerForLiveDataArticleDetail(articleViewModel)
 
         val pageID = arguments?.getInt(Constants.KEY_PAGE_ID)
-        Log.d("ArticleDetailFragment", "Page Id $pageID")
+
 
         pageID?.let { id ->
             articleViewModel.getArticleDetail(id)
         }
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.article_detail, container, false)
+        return inflater.inflate(R.layout.fragment_article_detail, container, false)
     }
 
 
-
+    /**
+     * This method will observe the live data for article detail
+     */
     private fun registerForLiveDataArticleDetail(articleViewModel :ArticleViewModel){
         articleViewModel.getArticleDetailLiveData().observeNonNull(this){ state ->
             handleArticleDetailResponse(state)
@@ -81,6 +80,9 @@ class ArticleDetailFragment : BottomSheetDialogFragment() {
         }
     }
 
+    /**
+     * This method will use to update article detail ui
+     */
 
     private fun updateUI(detail: ArticleDetail?){
 
@@ -103,6 +105,9 @@ class ArticleDetailFragment : BottomSheetDialogFragment() {
     }
 
 
+    /**
+     * On Direction Button click this method will be use to fetch all the route
+     */
     private fun requestForRouteDetail(){
         val currentLatLng = arguments?.getString(Constants.CURRENT_LAT_LNG)
         val destinationLatLng = arguments?.getString(Constants.PAGE_LAT_LNG)
@@ -112,19 +117,26 @@ class ArticleDetailFragment : BottomSheetDialogFragment() {
         getRouteViewModel.getRouteDetail(currentLatLng,destinationLatLng,resources.getString(R.string.api_key))
     }
 
+
+    /**
+     * Register live data of Suggested Route
+     */
     private fun registerForLiveDataGetRoute(getRouteViewModel: GetRouteViewModel){
         getRouteViewModel.getRouteLiveData().observeNonNull(this){ state ->
             handleGetRouteResponse(state)
         }
     }
 
-
+    /**
+     * This method will handle the state of response during the get route request. once the request success it will send data
+     * to activity
+     */
     private fun handleGetRouteResponse(state: GetRouteViewState){
         if(state.isLoading()){
             progressBar_detail.visibility = View.VISIBLE
         }else if(state.status == Status.SUCCESS){
             progressBar_detail.visibility = View.GONE
-            (activity as ArticleMapActivity).drawRoute(state.getRouteData())
+            (activity as ArticleMapActivity).processRoute(state.getRouteData())
             dismiss()
         }else if(state.status == Status.ERROR){
             progressBar_detail.visibility = View.GONE

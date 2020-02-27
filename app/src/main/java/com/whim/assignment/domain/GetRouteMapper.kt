@@ -9,14 +9,18 @@ import com.whim.assignment.ui.model.ArticleDetail
 import com.whim.assignment.ui.model.RouteData
 import javax.inject.Inject
 
-class GetRouteMapper  @Inject constructor() : Mapper<GetRouteResponse, RouteData> {
+class GetRouteMapper  @Inject constructor() : Mapper<GetRouteResponse,  List<RouteData>> {
 
-    override fun mapFrom(type: GetRouteResponse): RouteData {
+    override fun mapFrom(type: GetRouteResponse): List<RouteData> {
 
-        var latLngList  = mutableListOf<LatLng>()
+        var routeList  = mutableListOf<RouteData>()
 
         for (route in type.routes){
+            var latLngList  = mutableListOf<LatLng>()
+            var routeData = RouteData()
             for (leg in route.legs){
+                routeData.distance =  leg.distance.text
+                routeData.duration =  leg.duration.text
                 for (steps in leg.steps){
                     var polyLineList = PolyUtil.decode(steps.polyline.points)
                     for(latLng in polyLineList){
@@ -24,9 +28,11 @@ class GetRouteMapper  @Inject constructor() : Mapper<GetRouteResponse, RouteData
                     }
                 }
             }
+            routeData.routes = latLngList
+            routeList.add(routeData)
         }
 
-        return  RouteData(latLngList)
+        return  routeList
     }
 
 }

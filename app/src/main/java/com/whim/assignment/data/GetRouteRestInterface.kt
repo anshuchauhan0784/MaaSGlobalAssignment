@@ -12,6 +12,7 @@ interface GetRouteRestInterface {
     fun getRouteDetail(
         @Query("origin") origin: String,
         @Query("destination") destination: String,
-        @Query("key") key: String
+        @Query("key") key: String,
+        @Query("alternatives") alternatives: Boolean
     ) : Observable<GetRouteResponse>
 }

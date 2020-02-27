@@ -31,7 +31,7 @@ class GetRouteViewModel @Inject constructor(private val getRouteUseCase: GetRout
 
 
 
-    private fun onResultArticleDetailReady(resource: Resource<RouteData>) {
+    private fun onResultArticleDetailReady(resource: Resource<List<RouteData>>) {
         routeData.value = GetRouteViewState(
             status = resource.status,
             error = resource.error,

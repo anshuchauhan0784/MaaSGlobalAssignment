@@ -18,7 +18,7 @@
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="@string/api_key" />
-        <activity android:name=".ui.activity.ArticleMapActivity">
+        <activity android:name=".ui.activity.ArticleMapActivity" android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

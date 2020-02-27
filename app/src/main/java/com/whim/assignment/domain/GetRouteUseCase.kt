@@ -12,7 +12,7 @@ class GetRouteUseCase @Inject constructor(
     private val mapper: GetRouteMapper) {
 
 
-    fun getRouteDetail(origin : String, destination :String, key : String): Observable<Resource<RouteData>> {
+    fun getRouteDetail(origin : String, destination :String, key : String): Observable<Resource<List<RouteData>>> {
         return  repository
             .getRouteDetail(origin,destination,key)
             .map { resource ->

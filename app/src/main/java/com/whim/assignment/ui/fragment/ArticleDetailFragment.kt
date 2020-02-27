@@ -18,9 +18,12 @@ import com.whim.assignment.common.Status
 import com.whim.assignment.common.ui.observeNonNull
 import com.whim.assignment.ui.ArticleDetailViewState
 import com.whim.assignment.ui.ArticleViewModel
+import com.whim.assignment.ui.GetRouteViewModel
+import com.whim.assignment.ui.GetRouteViewState
 import com.whim.assignment.ui.activity.ArticleMapActivity
 import com.whim.assignment.ui.adapter.ImageViewerAdapter
 import com.whim.assignment.ui.model.ArticleDetail
+import com.whim.assignment.util.Constants
 import kotlinx.android.synthetic.main.activity_article_map.*
 import kotlinx.android.synthetic.main.article_detail.*
 import javax.inject.Inject
@@ -34,15 +37,18 @@ class ArticleDetailFragment : BottomSheetDialogFragment() {
     @Inject
     internal  lateinit var requestManager: RequestManager
 
+
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         (activity as ArticleMapActivity).articleMapComponent.inject(this)
         var articleViewModel = ViewModelProvider(this,viewModelProviderFactory).get(ArticleViewModel::class.java)
+
         registerForLiveDataArticleDetail(articleViewModel)
 
-        val pageID = arguments?.getInt("PageId")
+        val pageID = arguments?.getInt(Constants.KEY_PAGE_ID)
         Log.d("ArticleDetailFragment", "Page Id $pageID")
 
         pageID?.let { id ->
@@ -86,15 +92,45 @@ class ArticleDetailFragment : BottomSheetDialogFragment() {
             detail?.imageUrl?.let {
                 rv_image_gallery.adapter = ImageViewerAdapter(it,requestManager )
             }
-
             tv_wiki_link.visibility = View.VISIBLE
             tv_wiki_link.text = detail?.fullUrl ?: getString(R.string.wikipedia)
-
             divider.visibility = View.VISIBLE
             btn_direction.visibility = View.VISIBLE
 
+            btn_direction.setOnClickListener {
+                requestForRouteDetail()
+            }
     }
 
+
+    private fun requestForRouteDetail(){
+        val currentLatLng = arguments?.getString(Constants.CURRENT_LAT_LNG)
+        val destinationLatLng = arguments?.getString(Constants.PAGE_LAT_LNG)
+        if(currentLatLng.isNullOrBlank() || destinationLatLng.isNullOrBlank()) return
+        var getRouteViewModel = ViewModelProvider(this,viewModelProviderFactory).get(GetRouteViewModel::class.java)
+        registerForLiveDataGetRoute(getRouteViewModel)
+        getRouteViewModel.getRouteDetail(currentLatLng,destinationLatLng,resources.getString(R.string.api_key))
+    }
+
+    private fun registerForLiveDataGetRoute(getRouteViewModel: GetRouteViewModel){
+        getRouteViewModel.getRouteLiveData().observeNonNull(this){ state ->
+            handleGetRouteResponse(state)
+        }
+    }
+
+
+    private fun handleGetRouteResponse(state: GetRouteViewState){
+        if(state.isLoading()){
+            progressBar_detail.visibility = View.VISIBLE
+        }else if(state.status == Status.SUCCESS){
+            progressBar_detail.visibility = View.GONE
+            (activity as ArticleMapActivity).drawRoute(state.getRouteData())
+            dismiss()
+        }else if(state.status == Status.ERROR){
+            progressBar_detail.visibility = View.GONE
+            (activity as ArticleMapActivity).showErrorToast(state.getErrorMessage())
+        }
+    }
 
     companion object {
         const val TAG = "ArticleDetailFragment"

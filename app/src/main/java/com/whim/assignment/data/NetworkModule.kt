@@ -51,4 +51,13 @@ class NetworkModule {
         var retrofit = builder.baseUrl(Constants.BASE_URL_WIKI).build()
         return retrofit.create(WikiRestInterface::class.java)
     }
+
+
+    @Provides
+    @Singleton
+    fun provideRestInterfaceRoute(builder: Retrofit.Builder): GetRouteRestInterface {
+
+        var retrofit = builder.baseUrl(Constants.BASE_URL_GOOGLE_MAP).build()
+        return retrofit.create(GetRouteRestInterface::class.java)
+    }
 }

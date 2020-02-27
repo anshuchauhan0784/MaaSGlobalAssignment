@@ -9,7 +9,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
-import com.bumptech.glide.RequestManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -17,7 +16,9 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.whim.assignment.BaseApplication
 import com.whim.assignment.R
@@ -27,6 +28,8 @@ import com.whim.assignment.ui.ArticleMapComponent
 import com.whim.assignment.ui.ArticleViewModel
 import com.whim.assignment.ui.NearByArticleViewState
 import com.whim.assignment.ui.fragment.ArticleDetailFragment
+import com.whim.assignment.ui.model.RouteData
+import com.whim.assignment.util.Constants
 import kotlinx.android.synthetic.main.activity_article_map.*
 import javax.inject.Inject
 
@@ -45,15 +48,18 @@ class ArticleMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private  var googleMap: GoogleMap? = null
 
-    private var mLocationPermissionGranted = false
+    private var locationPermissionGranted = false
 
-    private  var mLastKnownLocation : Location? = null
+    private  var lastKnownLocation : Location? = null
 
     private var mBottomSheetBehavior: BottomSheetBehavior<View?>? = null
 
     private  val DEFAULT_ZOOM = 12f
 
+    private var selectedMarkerPosition : LatLng? = null
 
+    // Saving the list of marker on activity level so that after cancel on draw route we can show it again
+    private var listOfMarker = mutableListOf<Marker?>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         articleMapComponent = (application as BaseApplication).appComponent.articleMapComponent().create()
@@ -114,14 +120,14 @@ class ArticleMapActivity : AppCompatActivity(), OnMapReadyCallback {
      * This method will use to get current device location
      */
     private fun getDeviceLocation() {
-        if (mLocationPermissionGranted) {
+        if (locationPermissionGranted) {
             googleMap?.isMyLocationEnabled = true
             googleMap?.uiSettings?.isMyLocationButtonEnabled = true
             fusedLocationClient.lastLocation.addOnCompleteListener {task ->
 
                 if(task.isSuccessful){
-                    mLastKnownLocation = task.result
-                    mLastKnownLocation?.let { location ->
+                    lastKnownLocation = task.result
+                    lastKnownLocation?.let { location ->
                         googleMap?.moveCamera(
                             CameraUpdateFactory.newLatLngZoom(
                                 LatLng(
@@ -156,6 +162,7 @@ class ArticleMapActivity : AppCompatActivity(), OnMapReadyCallback {
                         .title(articleGeoData.title)
                 )
                 marker?.tag = articleGeoData.id
+                listOfMarker.add(marker)
                 googleMap?.setOnMarkerClickListener(onMarkerClick)
 
             }
@@ -186,7 +193,7 @@ class ArticleMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 REQUEST_CODE_LOCATION_PERMISSION
             )
         } else {
-            mLocationPermissionGranted = true
+            locationPermissionGranted = true
         }
     }
 
@@ -203,10 +210,10 @@ class ArticleMapActivity : AppCompatActivity(), OnMapReadyCallback {
         if(requestCode == REQUEST_CODE_LOCATION_PERMISSION){
             if (grantResults.isNotEmpty()
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                mLocationPermissionGranted = true
+                locationPermissionGranted = true
                 getDeviceLocation()
             }else{
-                mLocationPermissionGranted = false
+                locationPermissionGranted = false
                 Toast.makeText(this,"Permission Denied", Toast.LENGTH_LONG).show()
             }
 
@@ -224,19 +231,41 @@ class ArticleMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
     private  val onMarkerClick = GoogleMap.OnMarkerClickListener {marker ->
-        showArticleDetail(marker.tag as Int)
+        selectedMarkerPosition =  marker.position
+        showArticleDetail(marker.tag as Int,marker.position)
         return@OnMarkerClickListener true
     }
 
-   private fun showArticleDetail(pageId : Int) {
+   private fun showArticleDetail(pageId : Int, latLng: LatLng) {
        var data  = Bundle()
-       data.putInt("PageId",pageId)
+       data.putInt(Constants.KEY_PAGE_ID,pageId)
+       data.putString(Constants.PAGE_LAT_LNG,"${latLng.latitude},${latLng.longitude}")
+       data.putString(Constants.CURRENT_LAT_LNG,"${lastKnownLocation?.latitude},${lastKnownLocation?.longitude}")
+
        val articleDetailFragment = ArticleDetailFragment()
        articleDetailFragment?.arguments = data
        articleDetailFragment.show(supportFragmentManager,ArticleDetailFragment.TAG)
     }
 
+    fun drawRoute(routeData: RouteData?){
+        googleMap?.clear()
+        if(selectedMarkerPosition != null) {
+            googleMap?.addMarker(
+                MarkerOptions()
+                    .position(selectedMarkerPosition!!)
+            )
+        }
+
+        routeData?.routes?.let {
+            googleMap?.addPolyline(PolylineOptions().addAll(it))
+        }
+
+
+    }
+
+
 }
+
 
 
 // Get the fragment reference

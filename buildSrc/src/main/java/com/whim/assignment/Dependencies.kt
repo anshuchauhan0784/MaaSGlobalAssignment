@@ -22,4 +22,5 @@ object Dependencies {
     val googleLocation = "com.google.android.gms:play-services-location:${Versions.googleLocationVersion}"
     val glide = "com.github.bumptech.glide:glide:${Versions.glide_version}"
     val glideCompiler = "com.github.bumptech.glide:compiler:${Versions.glide_version}"
+    val googleMapUtil = "com.google.maps.android:android-maps-utils:${Versions.map_util_version}"
 }

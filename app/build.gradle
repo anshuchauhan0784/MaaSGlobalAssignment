@@ -51,6 +51,7 @@ dependencies {
     //Maps
     implementation Dependencies.googleLocation
     implementation Dependencies.googleMap
+    implementation Dependencies.googleMapUtil
 
     testImplementation Dependencies.junit
     androidTestImplementation Dependencies.androidxTestExtensionJunit
